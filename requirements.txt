@@ -1,0 +1,4 @@
+lh-tool
+pre-commit
+paddlepaddle-gpu==2.5.2
+visualdl==2.5.2
