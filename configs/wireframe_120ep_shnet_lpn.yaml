@@ -91,7 +91,7 @@ model:
       with_logits: True
       weight: 1.0
     loss_loff:
-      type: SmoothL1Loss  
+      type: SmoothL1Loss
       weight: 4.0
     loss_loi:
       type: BCELoss

@@ -20,6 +20,7 @@ class Residual(nn.Layer):
     """
     Residual block
     """
+
     expansion = 2
 
     def __init__(
@@ -34,13 +35,17 @@ class Residual(nn.Layer):
         self.bn1 = nn.BatchNorm2D(inplanes)
         self.conv1 = nn.Conv2D(inplanes, planes, kernel_size=1)
         self.bn2 = nn.BatchNorm2D(planes)
-        self.conv2 = nn.Conv2D(planes, planes, kernel_size=3, stride=stride, padding=1)
+        self.conv2 = nn.Conv2D(
+            planes, planes, kernel_size=3, stride=stride, padding=1
+        )
         self.bn3 = nn.BatchNorm2D(planes)
         self.conv3 = nn.Conv2D(planes, planes * self.expansion, kernel_size=1)
         self.relu = nn.ReLU()
 
         if inplanes != planes * self.expansion:
-            self.downsample = nn.Conv2D(inplanes, planes * self.expansion, kernel_size=1)
+            self.downsample = nn.Conv2D(
+                inplanes, planes * self.expansion, kernel_size=1
+            )
         else:
             self.downsample = None
 
@@ -63,12 +68,7 @@ class Hourglass(nn.Layer):
     Hourglass block
     """
 
-    def __init__(
-        self, 
-        depth, 
-        num_blocks, 
-        num_feats
-    ):
+    def __init__(self, depth, num_blocks, num_feats):
         super().__init__()
 
         self.depth = depth
@@ -85,11 +85,13 @@ class Hourglass(nn.Layer):
             *[Residual(self.num_feats) for _ in range(self.num_blocks)]
         )
         if self.depth > 1:
-            self.low2 = Hourglass(self.depth - 1, self.num_blocks, self.num_feats)
+            self.low2 = Hourglass(
+                self.depth - 1, self.num_blocks, self.num_feats
+            )
         else:
             self.low2 = nn.Sequential(
                 *[Residual(self.num_feats) for _ in range(self.num_blocks)]
-            )     
+            )
         self.low3 = nn.Sequential(
             *[Residual(self.num_feats) for _ in range(self.num_blocks)]
         )
@@ -112,7 +114,8 @@ class SHNet(nn.Layer):
     Stacked Hourglass Network
     """
 
-    def __init__(self, 
+    def __init__(
+        self,
         in_channels=3,
         stem_channels=64,
         out_channels=256,
@@ -122,7 +125,7 @@ class SHNet(nn.Layer):
         out_indices=[0, 1],
     ):
         super().__init__()
-    
+
         self.in_channels = in_channels
         self.stem_channels = stem_channels
         self.num_feats = out_channels
@@ -133,7 +136,9 @@ class SHNet(nn.Layer):
 
         expansion = Residual.expansion
         self.stem = nn.Sequential(
-            nn.Conv2D(in_channels, stem_channels, kernel_size=7, stride=2, padding=3),
+            nn.Conv2D(
+                in_channels, stem_channels, kernel_size=7, stride=2, padding=3
+            ),
             nn.BatchNorm2D(stem_channels),
             nn.ReLU(),
             Residual(stem_channels, stem_channels),
@@ -144,18 +149,26 @@ class SHNet(nn.Layer):
 
         hourglasses, residuals, fcs, fcs_ = [], [], [], []
         for i in range(self.num_stacks):
-            hourglasses.append(Hourglass(self.depth, self.num_blocks, self.num_feats))
+            hourglasses.append(
+                Hourglass(self.depth, self.num_blocks, self.num_feats)
+            )
             residual = nn.Sequential(
-                *[Residual(self.num_feats) for _ in range(self.num_blocks) ]
+                *[Residual(self.num_feats) for _ in range(self.num_blocks)]
             )
             residuals.append(residual)
-            fcs.append(nn.Sequential(
-                nn.Conv2D(self.num_feats, self.num_feats, kernel_size=1, stride=1),
-                nn.BatchNorm2D(self.num_feats),
-                nn.ReLU()
-            ))
+            fcs.append(
+                nn.Sequential(
+                    nn.Conv2D(
+                        self.num_feats, self.num_feats, kernel_size=1, stride=1
+                    ),
+                    nn.BatchNorm2D(self.num_feats),
+                    nn.ReLU(),
+                )
+            )
             if i < self.num_stacks - 1:
-                fcs_.append(nn.Conv2D(self.num_feats, self.num_feats, kernel_size=1))
+                fcs_.append(
+                    nn.Conv2D(self.num_feats, self.num_feats, kernel_size=1)
+                )
 
         self.hourglasses = nn.LayerList(hourglasses)
         self.residuals = nn.LayerList(residuals)

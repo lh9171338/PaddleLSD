@@ -21,7 +21,6 @@ from lh_pplsd.visualizers import Visualizer
 import lh_pplsd.apis.utils as api_utils
 
 
-
 def default_dataloader_build_fn(**kwargs):
     """default dataloader build function"""
 
@@ -269,15 +268,20 @@ class Trainer:
 
                 # delete old model
                 if epoch > self.keep_checkpoint_max:
-                    old_model_file =  os.path.join(
-                        self.save_dir, "epoch-{:03d}.pdparams".format(epoch - self.keep_checkpoint_max)
+                    old_model_file = os.path.join(
+                        self.save_dir,
+                        "epoch-{:03d}.pdparams".format(
+                            epoch - self.keep_checkpoint_max
+                        ),
                     )
                     logging.info("Pop model: {}".format(old_model_file))
                     if os.path.exists(old_model_file):
                         os.remove(old_model_file)
 
             # Eval
-            if (self.eval_interval > 0 and epoch % self.eval_interval == 0) or epoch == self.epochs:
+            if (
+                self.eval_interval > 0 and epoch % self.eval_interval == 0
+            ) or epoch == self.epochs:
                 metric_dict = self.test(do_eval=True)
                 if dist.get_rank() == 0:
                     msg_dict = {}
@@ -290,7 +294,13 @@ class Trainer:
 
         logging.info("Training is complete")
 
-    def test(self, save_result=False, do_eval=False, do_visualize=False, no_infer=False):
+    def test(
+        self,
+        save_result=False,
+        do_eval=False,
+        do_visualize=False,
+        no_infer=False,
+    ):
         """test"""
         if self.val_dataset is None:
             raise RuntimeError(
@@ -300,7 +310,7 @@ class Trainer:
             raise ValueError(
                 "The length of test dataset is 0. Please check if your dataset is valid!"
             )
-        
+
         if do_visualize and self.visualizer is None:
             raise RuntimeError("Visualizer is not specified!")
 
@@ -343,11 +353,15 @@ class Trainer:
             # save results
             if save_result:
                 if dist.get_world_size() > 1:
-                    results = api_utils.collect_results_cpu(part_results, size=len(self.val_dataset))
+                    results = api_utils.collect_results_cpu(
+                        part_results, size=len(self.val_dataset)
+                    )
                 else:
                     results = part_results
                 if dist.get_rank() == 0:
-                    logging.info("Saving eval results at {}".format(result_file))
+                    logging.info(
+                        "Saving eval results at {}".format(result_file)
+                    )
                     paddle.save(results, result_file)
         else:
             logging.info("Loading eval results at {}".format(result_file))

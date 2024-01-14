@@ -18,7 +18,12 @@ import lh_pplsd.apis.utils as api_utils
 import lh_pplsd.metrics.utils as metric_utils
 
 
-__all__ = ["ComposeMetric", "StructuralAPMetric", "JunctionAPMetric", "HeatmapAPMetric"]
+__all__ = [
+    "ComposeMetric",
+    "StructuralAPMetric",
+    "JunctionAPMetric",
+    "HeatmapAPMetric",
+]
 
 
 @manager.METRICS.add_component
@@ -28,7 +33,7 @@ class ComposeMetric(Metric):
     """
 
     def __init__(
-        self, 
+        self,
         metrics,
         **kwargs,
     ):
@@ -128,7 +133,9 @@ class StructuralAPMetric(Metric):
         for result in tqdm.tqdm(results):
             pred_lines = result["pred_lines"] / self.downsample
             pred_scores = result["pred_line_scores"]
-            gt_lines = result["gt_lines"].astype(pred_lines.dtype) / self.downsample
+            gt_lines = (
+                result["gt_lines"].astype(pred_lines.dtype) / self.downsample
+            )
             # remove invalid GT
             valid = ~(gt_lines == 0).all(axis=[-2, -1])
             gt_lines = gt_lines[valid].reshape([-1, 2, 2])
@@ -145,8 +152,16 @@ class StructuralAPMetric(Metric):
 
             # calculate distance
             if num_gt:
-                dists1 = ((pred_lines[:, None] - gt_lines) ** 2).sum(axis=-1).mean(axis=-1)
-                dists2 = ((pred_lines[:, None] - gt_lines[:, ::-1]) ** 2).sum(axis=-1).mean(axis=-1)
+                dists1 = (
+                    ((pred_lines[:, None] - gt_lines) ** 2)
+                    .sum(axis=-1)
+                    .mean(axis=-1)
+                )
+                dists2 = (
+                    ((pred_lines[:, None] - gt_lines[:, ::-1]) ** 2)
+                    .sum(axis=-1)
+                    .mean(axis=-1)
+                )
                 dists = paddle.minimum(dists1, dists2)
                 gt_indices = paddle.argmin(dists, axis=-1)
                 pred_indices = paddle.arange(num_pred)
@@ -202,7 +217,7 @@ class StructuralAPMetric(Metric):
                 AP = 0
             else:
                 tpfp = np.concatenate(self.tpfp_buffer[i])
-                
+
                 # sort
                 indices = np.argsort(-pred_score, axis=0)
                 tpfp = tpfp[indices]
@@ -214,13 +229,22 @@ class StructuralAPMetric(Metric):
                 AP, _, _ = metric_utils.calc_AP(prs, rcs)
 
                 if save_dir is not None:
-                    save_file = os.path.join(save_dir, "sAP{}.jpg".format(thresh))
-                    metric_utils.plot_pr_curve(save_file, prs, rcs, label="sAP{}={:.1f}".format(thresh, AP))
+                    save_file = os.path.join(
+                        save_dir, "sAP{}.jpg".format(thresh)
+                    )
+                    metric_utils.plot_pr_curve(
+                        save_file,
+                        prs,
+                        rcs,
+                        label="sAP{}={:.1f}".format(thresh, AP),
+                    )
 
             metric_dict["sAP{}".format(thresh)] = AP
 
         metric_dict["msAP"] = np.mean(list(metric_dict.values()))
-        keys = ["msAP"] + ["sAP{}".format(thresh) for thresh in self.thresh_list]
+        keys = ["msAP"] + [
+            "sAP{}".format(thresh) for thresh in self.thresh_list
+        ]
         values = [metric_dict[key] for key in keys]
         values = ["{:.1f}".format(value * 100) for value in values]
         print("| " + " | ".join(keys) + " |")
@@ -278,13 +302,15 @@ class JunctionAPMetric(Metric):
         for result in tqdm.tqdm(results):
             pred_juncs = result["pred_juncs"] / self.downsample
             pred_scores = result["pred_junc_scores"]
-            gt_lines = result["gt_lines"].astype(pred_juncs.dtype) / self.downsample
+            gt_lines = (
+                result["gt_lines"].astype(pred_juncs.dtype) / self.downsample
+            )
             # remove invalid GT
             valid = ~(gt_lines == 0).all(axis=[-2, -1])
             gt_lines = gt_lines[valid].reshape([-1, 2, 2])
 
             gt_juncs = gt_lines.reshape([-1, 2])
-            gt_juncs = paddle.unique(gt_juncs, axis=0) 
+            gt_juncs = paddle.unique(gt_juncs, axis=0)
 
             # record gt count
             num_gt = len(gt_juncs)
@@ -352,7 +378,7 @@ class JunctionAPMetric(Metric):
                 AP = 0
             else:
                 tpfp = np.concatenate(self.tpfp_buffer[i])
-                
+
                 # sort
                 indices = np.argsort(-pred_score, axis=0)
                 tpfp = tpfp[indices]
@@ -364,13 +390,22 @@ class JunctionAPMetric(Metric):
                 AP, _, _ = metric_utils.calc_AP(prs, rcs)
 
                 if save_dir is not None:
-                    save_file = os.path.join(save_dir, "APJ{:.1f}.jpg".format(thresh))
-                    metric_utils.plot_pr_curve(save_file, prs, rcs, label="APJ{:.1f}={:.1f}".format(thresh, AP))
+                    save_file = os.path.join(
+                        save_dir, "APJ{:.1f}.jpg".format(thresh)
+                    )
+                    metric_utils.plot_pr_curve(
+                        save_file,
+                        prs,
+                        rcs,
+                        label="APJ{:.1f}={:.1f}".format(thresh, AP),
+                    )
 
             metric_dict["APJ{:.1f}".format(thresh)] = AP
 
         metric_dict["mAPJ"] = np.mean(list(metric_dict.values()))
-        keys = ["mAPJ"] + ["APJ{:.1f}".format(thresh) for thresh in self.thresh_list]
+        keys = ["mAPJ"] + [
+            "APJ{:.1f}".format(thresh) for thresh in self.thresh_list
+        ]
         values = [metric_dict[key] for key in keys]
         values = ["{:.1f}".format(value * 100) for value in values]
         print("| " + " | ".join(keys) + " |")
@@ -389,7 +424,20 @@ class HeatmapAPMetric(Metric):
     def __init__(
         self,
         downsample=4,
-        thresh_list=[0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.97, 0.99, 0.995, 0.999, 0.9995, 0.9999],
+        thresh_list=[
+            0.5,
+            0.6,
+            0.7,
+            0.8,
+            0.9,
+            0.95,
+            0.97,
+            0.99,
+            0.995,
+            0.999,
+            0.9995,
+            0.9999,
+        ],
         **kwargs,
     ):
         super().__init__(**kwargs)
@@ -426,10 +474,14 @@ class HeatmapAPMetric(Metric):
         W, H = heatmap_size
         edgemap = paddle.zeros((H, W), dtype="bool")
         if len(lines):
-            num_pts = paddle.norm(lines[:, 1] - lines[:, 0], 2, axis=-1).max().astype("int32")
+            num_pts = (
+                paddle.norm(lines[:, 1] - lines[:, 0], 2, axis=-1)
+                .max()
+                .astype("int32")
+            )
             t = paddle.linspace(0, 1, num_pts)
-            lambda_ = paddle.stack([1 - t, t], axis=-1) # (num_pts, 2)
-            pts = paddle.matmul(lambda_[None], lines) # (N, num_pts, 2)
+            lambda_ = paddle.stack([1 - t, t], axis=-1)  # (num_pts, 2)
+            pts = paddle.matmul(lambda_[None], lines)  # (N, num_pts, 2)
             pts = pts.reshape([-1, 2])  # (N * num_pts, 2)
             pts = paddle.round(pts).astype("int32")
             pts = paddle.unique(pts, axis=0)
@@ -456,12 +508,17 @@ class HeatmapAPMetric(Metric):
         for result in tqdm.tqdm(results):
             pred_lines = result["pred_lines"] / self.downsample
             pred_scores = result["pred_line_scores"]
-            gt_lines = result["gt_lines"].astype(pred_lines.dtype) / self.downsample
+            gt_lines = (
+                result["gt_lines"].astype(pred_lines.dtype) / self.downsample
+            )
             # remove invalid GT
             valid = ~(gt_lines == 0).all(axis=[-2, -1])
             gt_lines = gt_lines[valid].reshape([-1, 2, 2])
             img_size = result["img_size"]
-            heatmap_size = [img_size[0] // self.downsample, img_size[1] // self.downsample]
+            heatmap_size = [
+                img_size[0] // self.downsample,
+                img_size[1] // self.downsample,
+            ]
 
             # record gt count
             gt_edgemap = self._line2heatmap(heatmap_size, gt_lines)
@@ -518,10 +575,12 @@ class HeatmapAPMetric(Metric):
         i = np.where(recall[1:] != recall[:-1])[0]
         APH = np.sum((recall[i + 1] - recall[i]) * precision[i + 1])
         FH = (2 * prs * rcs / np.maximum(prs + rcs, 1e-9)).max()
-        
+
         if save_dir is not None:
             save_file = os.path.join(save_dir, "APH.jpg")
-            metric_utils.plot_pr_curve(save_file, prs, rcs, label="APH={:.1f}".format(APH))
+            metric_utils.plot_pr_curve(
+                save_file, prs, rcs, label="APH={:.1f}".format(APH)
+            )
 
         metric_dict["APH"] = APH
         metric_dict["FH"] = FH

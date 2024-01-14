@@ -24,9 +24,7 @@ def parse_args():
         help="The config file",
         type=str,
     )
-    parser.add_argument(
-        "--no_infer", help="No infer", action="store_true"
-    )
+    parser.add_argument("--no_infer", help="No infer", action="store_true")
     parser.add_argument(
         "--save_result", help="Save result while testing", action="store_true"
     )
@@ -107,7 +105,9 @@ def main(args):
     )
 
     trainer = Trainer(**dic)
-    trainer.test(args.save_result, args.do_eval, args.do_visualize, args.no_infer)
+    trainer.test(
+        args.save_result, args.do_eval, args.do_visualize, args.no_infer
+    )
 
 
 if __name__ == "__main__":

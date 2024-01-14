@@ -51,7 +51,9 @@ class BCELoss(Loss):
     @weighted_loss
     def __call__(self, pred, target):
         if self.with_logits:
-            loss = F.binary_cross_entropy_with_logits(pred, target, reduction="none")
+            loss = F.binary_cross_entropy_with_logits(
+                pred, target, reduction="none"
+            )
         else:
             loss = F.binary_cross_entropy(pred, target, reduction="none")
 
@@ -81,9 +83,13 @@ class CELoss(Loss):
     @weighted_loss
     def __call__(self, pred, target):
         if self.with_logits:
-            loss = F.softmax_with_cross_entropy(pred, target, soft_label=self.soft_label)
+            loss = F.softmax_with_cross_entropy(
+                pred, target, soft_label=self.soft_label
+            )
         else:
-            loss = F.cross_entropy(pred, target, soft_label=self.soft_label, reduction="none")
+            loss = F.cross_entropy(
+                pred, target, soft_label=self.soft_label, reduction="none"
+            )
 
         if self.weight is not None:
             loss = loss * self.weight
@@ -111,9 +117,9 @@ class SmoothL1Loss(Loss):
     """
     Smooth L1 Loss
     """
-    
+
     def __init__(
-        self, 
+        self,
         delta=1.0,
         **kwargs,
     ):
@@ -123,7 +129,9 @@ class SmoothL1Loss(Loss):
 
     @weighted_loss
     def __call__(self, pred, target):
-        loss = F.smooth_l1_loss(pred, target, delta=self.delta, reduction="none")
+        loss = F.smooth_l1_loss(
+            pred, target, delta=self.delta, reduction="none"
+        )
         if self.weight is not None:
             loss = loss * self.weight
 

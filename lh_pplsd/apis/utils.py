@@ -23,7 +23,7 @@ def tensor2numpy(data):
 
     Args:
         data (tensor|dict|list): tensor data
-    
+
     Returns:
         data (numpy|dict|list): numpy data
     """
@@ -56,7 +56,9 @@ def collect_results_cpu(part_results, size, tmpdir=".dist_test"):
     mkdir_or_exist(tmpdir)
 
     # dump the part result to the dir
-    paddle.save(part_results, os.path.join(tmpdir, "part_{}.pdparams".format(rank)))
+    paddle.save(
+        part_results, os.path.join(tmpdir, "part_{}.pdparams".format(rank))
+    )
 
     # synchronize all processes
     dist.barrier()
@@ -75,7 +77,9 @@ def collect_results_cpu(part_results, size, tmpdir=".dist_test"):
         ordered_results = results[:size]
 
         # sort by sample_idx
-        ordered_results = sorted(ordered_results, key=lambda x: x["sample_idx"])
+        ordered_results = sorted(
+            ordered_results, key=lambda x: x["sample_idx"]
+        )
 
         # remove tmp dir
         shutil.rmtree(tmpdir)
@@ -168,7 +172,9 @@ def collect_object(object, tmpdir=None):
         # load results of all parts from tmp dir
         object_list = []
         for i in range(world_size):
-            with open(os.path.join(tmpdir, "part_{}.pkl".format(i)), "rb") as f:
+            with open(
+                os.path.join(tmpdir, "part_{}.pkl".format(i)), "rb"
+            ) as f:
                 object_list.append(pickle.load(f))
 
         # synchronize all processes: wait for pickle loading to complete
