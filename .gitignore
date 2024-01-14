@@ -1,0 +1,6 @@
+.vscode
+output
+*.egg-info
+visualize
+data
+**.pyc

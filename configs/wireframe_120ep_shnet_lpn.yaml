@@ -1,0 +1,127 @@
+epochs: 120
+batch_size: 4
+
+# ======================== dataset ========================
+define: &dataset_type WireframeDataset
+define: &data_root data/wireframe
+define: &ann_file_train data/wireframe/train.pkl
+define: &ann_file_val data/wireframe/test.pkl
+
+# ======================== train dataset ========================
+train_dataset:
+  type: *dataset_type
+  data_root: *data_root
+  ann_file: *ann_file_train
+  mode: train
+  pipeline:
+    - type: LoadImageFromFile
+    - type: RandomSampleLine
+      num_stc_pos_proposals: 300
+    - type: RandomHorizontalFlip
+      prob: 0.5
+    - type: RandomVerticalFlip
+      prob: 0.5
+    - type: ResizeImage
+      size: [512, 512]
+    - type: NormalizeImage
+      mean: [123.675, 116.28, 103.53]
+      std: [58.395, 57.12, 57.375]
+      std: [58.395, 57.12, 57.375]
+
+# ======================== val dataset ========================
+val_dataset:
+  type: *dataset_type
+  data_root: *data_root
+  ann_file: *ann_file_val
+  mode: val
+  pipeline:
+    - type: LoadImageFromFile
+    - type: ResizeImage
+      size: [512, 512]
+    - type: NormalizeImage
+      mean: [123.675, 116.28, 103.53]
+      std: [58.395, 57.12, 57.375]
+
+# ======================== model definition ========================
+define: &lr 4.0e-3
+define: &weight_decay 1.0e-4
+
+model:
+  type: LineDetector
+
+  backbone:
+    type: SHNet
+    in_channels: 3
+    stem_channels: 64
+    out_channels: 256
+    depth: 4
+    num_stacks: 2
+    num_blocks: 2
+
+  head:
+    type: LPN
+    num_feats: 256
+    out_channels_list: [1, 2, 1, 4]
+    downsample: 4
+    junc_max_num: 300
+    line_max_num: 5000
+    junc_score_thresh: 0.008
+    line_score_thresh: 0
+    num_pos_proposals: 300
+    num_neg_proposals: 300
+    two_stage: True
+    use_gt_sample: True
+    nms_size: 3
+    num_pts: 32
+    match_thresh: 15
+    line_coder:
+      type: CenterLineJuncCoder
+      feat_size: [128, 128]
+      downsample: 4
+    use_auxiliary_loss: True
+    loss_jmap:
+      type: BCELoss
+      with_logits: True
+      weight: 1.0
+    loss_joff:
+      type: L1Loss
+      weight: 1.0
+    loss_lmap:
+      type: BCELoss
+      with_logits: True
+      weight: 1.0
+    loss_loff:
+      type: SmoothL1Loss  
+      weight: 4.0
+    loss_loi:
+      type: BCELoss
+      with_logits: True
+      weight: 1.0
+    test_cfg:
+      line_score_factor: 0.5
+      junc_score_thresh: 0
+      line_score_thresh: 0
+
+optimizer:
+  type: AdamW
+  learning_rate: *lr
+  weight_decay: *weight_decay
+
+scheduler_by_epoch: True
+lr_scheduler:
+  type: MultiStepDecay
+  learning_rate: *lr
+  milestones: [100]
+  gamma: 0.1
+
+visualizer:
+  type: LineVisualizer
+  score_thresh: 0.8
+  nprocs: 1
+  fast: False
+
+metric:
+  type: ComposeMetric
+  metrics:
+    - type: JunctionAPMetric
+    - type: StructuralAPMetric
