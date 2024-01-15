@@ -12,7 +12,14 @@ import paddle.nn as nn
 import paddle.nn.functional as F
 
 
-__all__ = ["BatchChannelNorm", "ConvBNLayer", "ConvModule", "build_conv_layer", "build_norm_layer", "build_activation_layer"]
+__all__ = [
+    "BatchChannelNorm",
+    "ConvBNLayer",
+    "ConvModule",
+    "build_conv_layer",
+    "build_norm_layer",
+    "build_activation_layer",
+]
 
 
 class BatchChannelNorm(nn.Layer):

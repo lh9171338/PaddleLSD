@@ -23,11 +23,11 @@ class DownSample(nn.Layer):
     """
 
     def __init__(
-        self, 
+        self,
         ch_in,
         ch_out,
-        kernel_size=3, 
-        stride=2, 
+        kernel_size=3,
+        stride=2,
         padding=1,
         norm_type="bn",
     ):
@@ -58,12 +58,13 @@ class BasicBlock(nn.Layer):
         self,
         ch_in,
         ch_out,
-        norm_type='bn',
+        norm_type="bn",
     ):
         super().__init__()
 
-        assert ch_in == ch_out and (ch_in % 2) == 0, \
-            f"ch_in and ch_out should be the same even int, but the input \'ch_in is {ch_in}, \'ch_out is {ch_out}"
+        assert (
+            ch_in == ch_out and (ch_in % 2) == 0
+        ), f"ch_in and ch_out should be the same even int, but the input 'ch_in is {ch_in}, 'ch_out is {ch_out}"
         self.conv1 = ConvBNLayer(
             ch_in=ch_in,
             ch_out=ch_out // 2,
@@ -154,7 +155,7 @@ class DarkNet(nn.Layer):
         self.stages = nn.LayerList()
         for i, depth in enumerate(self.depths):
             downsample = DownSample(
-                ch_in=ch_out * (2 ** i),
+                ch_in=ch_out * (2**i),
                 ch_out=ch_out * (2 ** (i + 1)),
             )
             stage = Blocks(

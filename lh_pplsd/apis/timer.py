@@ -67,7 +67,9 @@ class TimerDecorator:
             T1 = time.time()
             ret = func(*args, **kwargs)
             T2 = time.time()
-            logging.info("{} time consuming: {}".format(func.__name__, T2 - T1))
+            logging.info(
+                "{} time consuming: {}".format(func.__name__, T2 - T1)
+            )
             return ret
 
         wrapper.__name__ = func.__name__

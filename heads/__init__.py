@@ -1,1 +1,0 @@
-from .lpn import LPN

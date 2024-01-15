@@ -15,7 +15,7 @@ from lh_pplsd.layers import ConvBNLayer
 from lh_pplsd.apis import manager
 
 
-__all__ = [ "YOLOv3FPN"]
+__all__ = ["YOLOv3FPN"]
 
 
 class YOLOv3DetBlock(nn.Layer):
@@ -32,13 +32,13 @@ class YOLOv3DetBlock(nn.Layer):
         super().__init__()
 
         conv_def = [
-            ('conv0', ch_in, channel, 1),
-            ('conv1', channel, channel * 2, 3),
-            ('conv2', channel * 2, channel, 1),
-            ('conv3', channel, channel * 2, 3),
-            ('route', channel * 2, channel, 1),
+            ("conv0", ch_in, channel, 1),
+            ("conv1", channel, channel * 2, 3),
+            ("conv2", channel * 2, channel, 1),
+            ("conv3", channel, channel * 2, 3),
+            ("route", channel * 2, channel, 1),
         ]
-        
+
         self.conv_module = nn.Sequential()
         for conv_name, ch_in, ch_out, kernel_size in conv_def:
             self.conv_module.add_sublayer(
@@ -51,7 +51,7 @@ class YOLOv3DetBlock(nn.Layer):
                     norm_type=norm_type,
                 ),
             )
-        
+
         self.tip = ConvBNLayer(
             ch_in=channel,
             ch_out=channel * 2,
@@ -64,7 +64,7 @@ class YOLOv3DetBlock(nn.Layer):
         route = self.conv_module(x)
         tip = self.tip(route)
 
-        return route, tip        
+        return route, tip
 
 
 @manager.NECKS.add_component
@@ -87,7 +87,11 @@ class YOLOv3FPN(nn.Layer):
         self.in_channels = in_channels
         self.out_channels = out_channels
         self.num_blocks = len(in_channels)
-        self.out_indices = list(range(len(out_channels))) if out_indices is None else out_indices
+        self.out_indices = (
+            list(range(len(out_channels)))
+            if out_indices is None
+            else out_indices
+        )
 
         self.blocks = nn.LayerList()
         self.routes = nn.LayerList()
@@ -129,9 +133,13 @@ class YOLOv3FPN(nn.Layer):
 
             if i < self.num_blocks - 1:
                 route = self.routes[i](route)
-                route = F.interpolate(route, scale_factor=2, mode="bilinear", align_corners=True)
+                route = F.interpolate(
+                    route, scale_factor=2, mode="bilinear", align_corners=True
+                )
 
-        outs = [out for i, out in enumerate(outs[::-1]) if i in self.out_indices]
+        outs = [
+            out for i, out in enumerate(outs[::-1]) if i in self.out_indices
+        ]
 
         return outs
 

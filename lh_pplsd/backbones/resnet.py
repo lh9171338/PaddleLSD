@@ -22,6 +22,7 @@ class BasicBlock(nn.Layer):
     """
     Basic Block for ResNet
     """
+
     expansion = 1
 
     def __init__(
@@ -83,7 +84,9 @@ class BasicBlock(nn.Layer):
 
             return out
 
-        out = recompute(_inner_forward, x) if self.with_cp else _inner_forward(x)
+        out = (
+            recompute(_inner_forward, x) if self.with_cp else _inner_forward(x)
+        )
         out = self.relu(out)
 
         return out
@@ -93,6 +96,7 @@ class Bottleneck(nn.Layer):
     """
     Bottleneck block for ResNet
     """
+
     expansion = 4
 
     def __init__(
@@ -148,10 +152,10 @@ class Bottleneck(nn.Layer):
             bias_attr=False,
         )
         self.conv3 = build_conv_layer(
-            conv_cfg, 
-            planes, 
-            planes * self.expansion, 
-            kernel_size=1, 
+            conv_cfg,
+            planes,
+            planes * self.expansion,
+            kernel_size=1,
             bias_attr=False,
         )
 
@@ -159,7 +163,6 @@ class Bottleneck(nn.Layer):
         self.downsample = downsample
 
     def forward(self, x):
-
         def _inner_forward(x):
             identity = x
             out = self.relu(self.norm1(self.conv1(x)))
@@ -173,7 +176,9 @@ class Bottleneck(nn.Layer):
 
             return out
 
-        out = recompute(_inner_forward, x) if self.with_cp else _inner_forward(x)
+        out = (
+            recompute(_inner_forward, x) if self.with_cp else _inner_forward(x)
+        )
         out = self.relu(out)
 
         return out
@@ -206,7 +211,9 @@ class ResLayer(nn.Sequential):
             if avg_down:
                 conv_stride = 1
                 downsample.append(
-                    nn.AvgPool2D(kernel_size=stride, stride=stride, ceil_mode=True)
+                    nn.AvgPool2D(
+                        kernel_size=stride, stride=stride, ceil_mode=True
+                    )
                 )
             downsample.extend(
                 [

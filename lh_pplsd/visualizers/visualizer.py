@@ -26,7 +26,7 @@ class Visualizer:
     """
 
     def __init__(
-        self, 
+        self,
         score_thresh=0,
         nprocs=1,
         **kwargs,
@@ -72,7 +72,7 @@ class LineVisualizer(Visualizer):
     """
 
     def __init__(
-        self, 
+        self,
         fast=False,
         **kwargs,
     ):
@@ -106,13 +106,19 @@ class LineVisualizer(Visualizer):
         pred_lines = pred_lines[mask]
         pred_lines[..., 0] *= sx
         pred_lines[..., 1] *= sy
-        
+
         # plot
         save_file = os.path.join(save_dir, os.path.basename(image_file))
         if self.fast:
             for pts in pred_lines:
                 pts = np.round(pts).astype(np.int32)
-                cv2.polylines(image, [pts], isClosed=False, color=[0, 255, 255], thickness=2)
+                cv2.polylines(
+                    image,
+                    [pts],
+                    isClosed=False,
+                    color=[0, 255, 255],
+                    thickness=2,
+                )
                 for pt in pts:
                     pt = tuple(pt)
                     cv2.line(image, pt, pt, color=[255, 255, 0], thickness=6)
@@ -129,10 +135,17 @@ class LineVisualizer(Visualizer):
             for pts in pred_lines:
                 pts = pts - 0.5
                 plt.plot(pts[:, 0], pts[:, 1], color="orange", linewidth=0.5)
-                plt.scatter(pts[:, 0], pts[:, 1], color="#33FFFF", s=1.2, edgecolors="none", zorder=5)
+                plt.scatter(
+                    pts[:, 0],
+                    pts[:, 1],
+                    color="#33FFFF",
+                    s=1.2,
+                    edgecolors="none",
+                    zorder=5,
+                )
 
             plt.savefig(save_file, dpi=ori_size[1], bbox_inches=0)
-            plt.close()            
+            plt.close()
 
     def visualize(self, save_dir):
         """

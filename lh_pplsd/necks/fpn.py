@@ -15,8 +15,7 @@ from lh_pplsd.layers import ConvModule, xavier_uniform_init, constant_init
 from lh_pplsd.apis import manager
 
 
-__all__ = [ "FPN"]
-
+__all__ = ["FPN"]
 
 
 @manager.NECKS.add_component
@@ -141,7 +140,9 @@ class FPN(nn.Layer):
             # In some cases, fixing `scale factor` (e.g. 2) is preferred, but
             #  it cannot co-exist with `size` in `F.interpolate`.
             if "scale_factor" in self.upsample_cfg:
-                laterals[i - 1] += F.interpolate(laterals[i], **self.upsample_cfg)
+                laterals[i - 1] += F.interpolate(
+                    laterals[i], **self.upsample_cfg
+                )
             else:
                 prev_shape = laterals[i - 1].shape[2:]
                 laterals[i - 1] += F.interpolate(
@@ -150,7 +151,9 @@ class FPN(nn.Layer):
 
         # build outputs
         # part 1: from original levels
-        outs = [self.fpn_convs[i](laterals[i]) for i in range(used_backbone_levels)]
+        outs = [
+            self.fpn_convs[i](laterals[i]) for i in range(used_backbone_levels)
+        ]
         # part 2: add extra levels
         if self.num_outs > len(outs):
             # use max pool to get more levels on top of outputs

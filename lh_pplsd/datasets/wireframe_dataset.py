@@ -57,17 +57,19 @@ class WireframeDataset(paddle.io.Dataset):
         """load annotations"""
         with open(self.ann_file, "rb") as f:
             self.data_infos = pickle.load(f)
-        
+
     def __getitem__(self, index):
         info = self.data_infos[index]
-        image_file = os.path.join(self.data_root, info["img_meta"]["image_file"])
+        image_file = os.path.join(
+            self.data_root, info["img_meta"]["image_file"]
+        )
 
         sample = {
             "mode": self.mode,
             "img_meta": {
                 "sample_idx": index,
                 "image_file": image_file,
-            }
+            },
         }
         if not self.is_test_mode:
             sample["gt_lines"] = info["lines"]
@@ -95,7 +97,9 @@ class WireframeDataset(paddle.io.Dataset):
                 elems = []
                 for elem in batch:
                     elem = elem[key]
-                    elem = np.concatenate([elem, np.zeros((max_num - len(elem), 2, 2))])
+                    elem = np.concatenate(
+                        [elem, np.zeros((max_num - len(elem), 2, 2))]
+                    )
                     elems.append(elem)
                 collated_batch[key] = np.stack(elems, axis=0)
             elif key in ["gt_labels"]:
@@ -104,7 +108,9 @@ class WireframeDataset(paddle.io.Dataset):
                 elems = []
                 for elem in batch:
                     elem = elem[key]
-                    elem = np.concatenate([elem, np.zeros((max_num - len(elem),))])
+                    elem = np.concatenate(
+                        [elem, np.zeros((max_num - len(elem),))]
+                    )
                     elems.append(elem)
                 collated_batch[key] = np.stack(elems, axis=0)
             elif key in ["img_meta"]:

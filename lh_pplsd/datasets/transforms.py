@@ -197,7 +197,9 @@ class RandomErasingImage:
     Random erasing image
     """
 
-    def __init__(self, prob=0.5, scale=(0.02, 0.33), ratio=(0.3, 3.3), value=0):
+    def __init__(
+        self, prob=0.5, scale=(0.02, 0.33), ratio=(0.3, 3.3), value=0
+    ):
         self.transform = T.RandomErasing(prob, scale, ratio, value)
 
     def __call__(self, sample):
@@ -215,11 +217,15 @@ class RandomSampleLine:
     def __init__(self, num_stc_pos_proposals, num_stc_neg_proposals=0):
         self.num_stc_pos_proposals = num_stc_pos_proposals
         self.num_stc_neg_proposals = num_stc_neg_proposals
-        assert self.num_stc_neg_proposals == 0, "Currently `num_stc_neg_proposals` must be 0"
-    
+        assert (
+            self.num_stc_neg_proposals == 0
+        ), "Currently `num_stc_neg_proposals` must be 0"
+
     def __call__(self, sample):
         gt_lines = sample.get("gt_lines")
-        gt_pos_lines = np.random.permutation(gt_lines)[:self.num_stc_pos_proposals]
+        gt_pos_lines = np.random.permutation(gt_lines)[
+            : self.num_stc_pos_proposals
+        ]
         gt_samples = gt_pos_lines
         gt_labels = np.ones(len(gt_samples), dtype="int32")
         sample["gt_samples"] = gt_samples
@@ -263,7 +269,13 @@ class Visualize:
             gt_lines = sample["gt_lines"]
             for pts in gt_lines:
                 pts = np.round(pts).astype(np.int32)
-                cv2.polylines(image, [pts], isClosed=False, color=[0, 255, 255], thickness=2)
+                cv2.polylines(
+                    image,
+                    [pts],
+                    isClosed=False,
+                    color=[0, 255, 255],
+                    thickness=2,
+                )
                 for pt in pts:
                     pt = tuple(pt)
                     cv2.line(image, pt, pt, color=[255, 255, 0], thickness=6)
