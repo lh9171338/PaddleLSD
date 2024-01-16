@@ -98,6 +98,13 @@ def kaiming_uniform_init(
     return _no_grad_uniform_(param, -k, k)
 
 
+def linear_init(module):
+    """linear init"""
+    bound = 1 / math.sqrt(module.weight.shape[0])
+    uniform_init(module.weight, -bound, bound)
+    uniform_init(module.bias, -bound, bound)
+
+
 def _calculate_fan_in_and_fan_out(tensor, reverse=False):
     """
     Calculate (fan_in, _fan_out) for tensor
