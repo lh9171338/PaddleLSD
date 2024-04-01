@@ -23,6 +23,9 @@ sh test.sh <config>
 
 # Metric
 
-| model | config | msAP | sAP5 | sAP10 | sAP15 | mAPJ |
-| :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| LPN | [config](../configs/wireframe_120ep_shnet_lpn.yaml) | 58.5 | 55.6 | 59.1 | 60.8 | 54.0 |
+| model | config | msAP | sAP5 | sAP10 | sAP15 | mAPJ | FPS |
+| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| LPN | [config](../configs/wireframe_120ep_shnet_lpn.yaml) | 58.9 | 55.9 | 59.5 | 61.1 | 54.5 | 22 |
+| RepLPN | [config](../configs/wireframe_120ep_repshnet_replpn.yaml) | 58.1 | 54.8 | 58.9 | 60.7 | 54.8 | 47 |
+| RepLPN-DCN | [config](../configs/wireframe_120ep_repshnet_replpn_dcn.yaml) | 61.3 | 58.5 | 61.9 | 63.6 | 55.9 | 45 |
+| RepLPN-DDCN | [config](../configs/wireframe_120ep_repshnet_replpn_ddcn.yaml) | 57.3 | 54.1 | 57.9 | 59.8 | 53.8 | 45 |
