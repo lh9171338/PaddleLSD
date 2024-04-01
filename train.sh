@@ -7,7 +7,6 @@ unset DISTRIBUTED_TRAINER_ENDPOINTS
 unset FLAGS_START_PORT
 unset PADDLE_ELASTIC_TIMEOUT
 
-source py38/setup.bash
 NNODES=1
 NGPUS=8
 
@@ -20,6 +19,7 @@ cp configs/${CONFIG}.yaml $OUTOUT
 CONFIG=${OUTOUT}/${CONFIG}.yaml
 
 logdir=${OUTOUT}/log
+log_file=${OUTOUT}/train.txt
 
 # kill
 ./kill.sh run.py
@@ -30,12 +30,12 @@ sleep 5
 python -m paddle.distributed.launch \
     --log_dir ${logdir} \
     --nnodes ${NNODES} \
-    --nproc_per_node $NGPUS \
+    --nproc_per_node ${NGPUS} \
     tools/train.py \
-    --config $CONFIG \
+    --config ${CONFIG} \
     --keep_checkpoint_max 1 \
     --eval_interval 4 \
-    --save_dir $OUTOUT
+    --save_dir ${OUTOUT} |tee ${log_file}
 
 # burn
 ./burning.sh

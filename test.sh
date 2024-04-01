@@ -7,34 +7,35 @@ unset DISTRIBUTED_TRAINER_ENDPOINTS
 unset FLAGS_START_PORT
 unset PADDLE_ELASTIC_TIMEOUT
 
-source py38/setup.bash
 NNODES=1
-NGPUS=8
+NGPUS=1
 
 CONFIG=$1
 OUTOUT=output/${CONFIG}
-if [ ! -d $OUTOUT ]; then
-    mkdir -p $OUTOUT
+if [ ! -d ${OUTOUT} ]; then
+    mkdir -p ${OUTOUT}
 fi
 CONFIG=${OUTOUT}/${CONFIG}.yaml
 
 logdir=${OUTOUT}/log-test
+log_file=${OUTOUT}/test.txt
 
 # kill
 ./kill.sh run.py
-./kill.sh train.py
+./kill.sh test.py
 sleep 5
 
-# train
+# test
 python -m paddle.distributed.launch \
     --log_dir ${logdir} \
     --nnodes ${NNODES} \
-    --nproc_per_node $NGPUS \
+    --nproc_per_node ${NGPUS} \
     tools/test.py \
-    --config $CONFIG \
-    --save_dir $OUTOUT \
+    --config ${CONFIG} \
+    --save_dir ${OUTOUT} \
+    --batch_size 1 \
     --do_eval \
-    --model $OUTOUT/latest.pdparams
+    --model ${OUTOUT}/latest.pdparams |tee ${log_file}
 
 # burn
 ./burning.sh
