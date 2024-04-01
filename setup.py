@@ -13,14 +13,14 @@
 # limitations under the License.
 
 from setuptools import setup
-import lh_pplsd
+import pplsd
 
 
 setup(
-    name="lh_pplsd",
-    version=lh_pplsd.__version__.replace("-", ""),
-    description=("lh-pplsd"),
-    long_description="PaddlePaddle Line Segment Detection",
+    name="pplsd",
+    version=pplsd.__version__.replace("-", ""),
+    description=("Line Segment Detection"),
+    long_description="Line Segment Detection based on PaddlePaddle",
     author="lh9171338",
     author_email="lihao2015@whu.edu.cn",
     # PyPI package information.
@@ -40,5 +40,5 @@ setup(
         "Topic :: Software Development :: Libraries",
         "Topic :: Software Development :: Libraries :: Python Modules",
     ],
-    keywords=("PaddlePaddle Line Segment Detection Package"),
+    keywords=("Line Segment Detection Package based on PaddlePaddle"),
 )

@@ -16,7 +16,7 @@ import numpy as np
 import logging
 import argparse
 import time
-from lh_pplsd.apis import Config, Trainer
+from pplsd.apis import Config, Trainer
 
 
 def parse_args():

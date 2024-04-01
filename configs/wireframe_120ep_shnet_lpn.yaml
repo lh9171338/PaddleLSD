@@ -75,7 +75,7 @@ model:
     num_pts: 32
     match_thresh: 15
     line_coder:
-      type: CenterLineJuncCoder
+      type: CenterLineJunctionCoder
       feat_size: [128, 128]
       downsample: 4
     use_auxiliary_loss: True

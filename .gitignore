@@ -1,6 +1,7 @@
 .vscode
-output
+output*
 *.egg-info
 visualize
 data
 **.pyc
+py38

@@ -1,12 +1,12 @@
-[<img height="23" src="https://github.com/lh9171338/Outline/blob/master/icon.jpg"/>](https://github.com/lh9171338/Outline) lh-pplsd
+[<img height="23" src="https://github.com/lh9171338/Outline/blob/master/icon.jpg"/>](https://github.com/lh9171338/Outline) PaddleLSD
 ===
 
-This is a PaddlePaddle line segment detection package.
+This is a line segment detection package based on PaddlePaddle.
 
 # Install
 ```shell
-git clone https://github.com/lh9171338/lh-pplsd.git
-cd lh-pplsd
+git clone https://github.com/lh9171338/PaddleLSD.git
+cd PaddleLSD
 python -m pip install -r requirements.txt
 python -m pip install -v -e .
 ```
