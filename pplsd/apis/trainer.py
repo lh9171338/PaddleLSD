@@ -9,6 +9,7 @@
 
 
 import os
+import time
 import paddle
 from paddle.metric import Metric
 import tqdm
@@ -216,6 +217,11 @@ class Trainer:
         for epoch in range(self.last_epoch + 1, self.epochs + 1):
             # Train
             self.model.train()
+            if isinstance(self.model, paddle.DataParallel):
+                if hasattr(self.model._layers, "convert_to_train"):
+                    self.model._layers.convert_to_train()
+            elif hasattr(self.model._layers, "convert_to_train"):
+                self.model.convert_to_train()
             for sample in self.train_dataloader:
                 outputs = self.model(sample)
                 total_loss, log_loss = self.parse_losses(outputs["loss"])
@@ -331,24 +337,37 @@ class Trainer:
         if not no_infer:
             # Test
             self.model.eval()
+            if isinstance(self.model, paddle.DataParallel):
+                if hasattr(self.model._layers, "convert_to_deploy"):
+                    self.model._layers.convert_to_deploy()
+            elif hasattr(self.model, "convert_to_deploy"):
+                self.model.convert_to_deploy()
+
             part_results = []
-            for sample in tqdm.tqdm(self.val_dataloader, desc="Test"):
-                with paddle.no_grad():
+            infer_times = []
+            with paddle.no_grad():
+                for sample in tqdm.tqdm(self.val_dataloader, desc="Test"):
+                    start_time = time.time()
                     outputs = self.model(sample)
-                results = outputs["pred"]
+                    end_time = time.time()
+                    infer_times.append(end_time - start_time)
+                    results = outputs["pred"]
 
-                # add img_meta
-                img_metas = sample["img_meta"]
-                for i, result in enumerate(results):
-                    result.update(img_metas[i])
-
-                # add gt
-                if "gt_lines" in sample:
-                    gt_lines = sample["gt_lines"]
+                    # add img_meta
+                    img_metas = sample["img_meta"]
                     for i, result in enumerate(results):
-                        result.update(dict(gt_lines=gt_lines[i]))
+                        result.update(img_metas[i])
 
-                part_results.extend(results)
+                    # add gt
+                    if "gt_lines" in sample:
+                        gt_lines = sample["gt_lines"]
+                        for i, result in enumerate(results):
+                            result.update(dict(gt_lines=gt_lines[i]))
+
+                    part_results.extend(results)
+
+            fps = len(self.val_dataloader) / sum(infer_times)
+            logging.info("FPS: {:.0f}".format(fps))
 
             # save results
             if save_result:

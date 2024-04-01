@@ -9,10 +9,10 @@
 
 
 import paddle
-import paddle.nn as nn
+from pplsd.layers import RepLayer
 
 
-class Detector(nn.Layer):
+class Detector(RepLayer):
     """
     Base Detector
     """
