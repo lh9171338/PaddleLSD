@@ -167,7 +167,7 @@ class StructuralAPMetric(Metric):
                 for i, thresh in enumerate(self.thresh_list):
                     mask1 = dists[pred_indices, gt_indices] < thresh
                     mask = paddle.zeros_like(dists, dtype="int32")
-                    mask[pred_indices, gt_indices] = mask1
+                    mask[pred_indices, gt_indices] = mask1.astype("int32")
                     cumsum = paddle.cumsum(mask, axis=0)
                     mask2 = cumsum[pred_indices, gt_indices] == 1
                     tpfp = mask1 & mask2
