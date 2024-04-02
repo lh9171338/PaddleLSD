@@ -161,17 +161,30 @@ class StructuralAPMetric(Metric):
                 )
                 dists = paddle.minimum(dists1, dists2)
                 gt_indices = paddle.argmin(dists, axis=-1)
-                pred_indices = paddle.arange(num_pred)
 
                 # for each threshold
                 for i, thresh in enumerate(self.thresh_list):
-                    mask1 = dists[pred_indices, gt_indices] < thresh
+                    mask1 = (
+                        paddle.take_along_axis(
+                            dists, gt_indices[:, None], axis=1
+                        )
+                        < thresh
+                    )
                     mask = paddle.zeros_like(dists, dtype="int32")
-                    mask[pred_indices, gt_indices] = mask1.astype("int32")
+                    mask = paddle.put_along_axis(
+                        mask,
+                        gt_indices[:, None],
+                        mask1.astype("int32"),
+                        axis=1,
+                    )
                     cumsum = paddle.cumsum(mask, axis=0)
-                    mask2 = cumsum[pred_indices, gt_indices] == 1
-                    tpfp = mask1 & mask2
-
+                    mask2 = (
+                        paddle.take_along_axis(
+                            cumsum, gt_indices[:, None], axis=1
+                        )
+                        == 1
+                    )
+                    tpfp = (mask1 & mask2).squeeze(axis=-1)
                     self.tpfp_buffer[i].append(tpfp.numpy())
             else:
                 # for each threshold
@@ -319,16 +332,30 @@ class JunctionAPMetric(Metric):
             if num_gt:
                 dists = ((pred_juncs[:, None] - gt_juncs) ** 2).sum(axis=-1)
                 gt_indices = paddle.argmin(dists, axis=-1)
-                pred_indices = paddle.arange(num_pred)
 
                 # for each threshold
                 for i, thresh in enumerate(self.thresh_list):
-                    mask1 = dists[pred_indices, gt_indices] < thresh
+                    mask1 = (
+                        paddle.take_along_axis(
+                            dists, gt_indices[:, None], axis=1
+                        )
+                        < thresh
+                    )
                     mask = paddle.zeros_like(dists, dtype="int32")
-                    mask[pred_indices, gt_indices] = mask1
+                    mask = paddle.put_along_axis(
+                        mask,
+                        gt_indices[:, None],
+                        mask1.astype("int32"),
+                        axis=1,
+                    )
                     cumsum = paddle.cumsum(mask, axis=0)
-                    mask2 = cumsum[pred_indices, gt_indices] == 1
-                    tpfp = mask1 & mask2
+                    mask2 = (
+                        paddle.take_along_axis(
+                            cumsum, gt_indices[:, None], axis=1
+                        )
+                        == 1
+                    )
+                    tpfp = (mask1 & mask2).squeeze(axis=-1)
                     self.tpfp_buffer[i].append(tpfp.numpy())
             else:
                 # for each threshold
