@@ -293,33 +293,31 @@ class LPN(nn.Layer):
                 )
                 pred_dict.update(result_dict)
 
-            if not self.two_stage:
-                return pred_dict
+            if self.two_stage:
+                # decode
+                if self.training:
+                    result_dict = self.line_coder.decode(
+                        output,
+                        junc_max_num=self.junc_max_num,
+                        line_max_num=self.line_max_num,
+                        junc_score_thresh=0,
+                        line_score_thresh=0,
+                    )
 
-            # decode
-            if self.training:
-                result_dict = self.line_coder.decode(
-                    output,
-                    junc_max_num=self.junc_max_num,
-                    line_max_num=self.line_max_num,
-                    junc_score_thresh=0,
-                    line_score_thresh=0,
-                )
+                if self.training:
+                    # sample lines from GT
+                    result_dict = self._sample_lines(
+                        result_dict, gt_lines, gt_samples, gt_labels
+                    )
+                    pred_loi = result_dict["sampled_lines"]
+                else:
+                    pred_loi = result_dict["pred_lines"]
 
-            if self.training:
-                # sample lines from GT
-                result_dict = self._sample_lines(
-                    result_dict, gt_lines, gt_samples, gt_labels
-                )
-                pred_loi = result_dict["sampled_lines"]
-            else:
-                pred_loi = result_dict["pred_lines"]
+                # LoI head
+                loi_scores = self.loi_head(feat, pred_loi)
+                result_dict["loi_scores"] = loi_scores
 
-            # LoI head
-            loi_scores = self.loi_head(feat, pred_loi)
-            result_dict["loi_scores"] = loi_scores
-
-            pred_dict.update(result_dict)
+                pred_dict.update(result_dict)
             pred_dicts.append(pred_dict)
 
         return pred_dicts
