@@ -37,9 +37,6 @@ python -m paddle.distributed.launch \
     --do_eval \
     --model ${OUTOUT}/latest.pdparams |tee ${log_file}
 
-# burn
-./burning.sh
-
 endTime=`date "+%F %T"`
 startTimestamp=`date -d "$startTime" +%s`
 endTimestamp=`date -d "$endTime" +%s`

@@ -37,9 +37,6 @@ python -m paddle.distributed.launch \
     --eval_interval 4 \
     --save_dir ${OUTOUT} |tee ${log_file}
 
-# burn
-./burning.sh
-
 endTime=`date "+%F %T"`
 startTimestamp=`date -d "$startTime" +%s`
 endTimestamp=`date -d "$endTime" +%s`
